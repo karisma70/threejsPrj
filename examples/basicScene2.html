@@ -42,8 +42,7 @@
 <body>
 <div class="wrapperDiv">
     <div id="sidebar" style="position:absolute;">
-        <p>고정폭 200px</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Porro inventore esse debitis voluptas labore ut quae veritatis reprehenderit ipsum.</p>
+        <input type="button" class="button" value="추가" style="position: absolute; top: 10px; margin-left: 22px;" onclick="addCube()">
     </div>
 
     <div id="renderView" class="mapview" style="position:absolute;">
@@ -56,6 +55,10 @@
     var scene;
     var camera;
     var renderer;
+
+    var numberOfObjects;
+    var planeGeometry;
+    var groundMesh;
 
     var adjustWidth = 204;
     var adjustHeight = 4;
@@ -127,8 +130,10 @@
         groundTexture.repeat.set( 25, 25 );
         groundTexture.anisotropy = 16;
 
-        var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, map: groundTexture } );
-        var groundMesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 20000, 20000 ), groundMaterial );
+        planeGeometry = new THREE.PlaneBufferGeometry( 20000, 20000 );
+        var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xfffff, specular: 0x111111, map: groundTexture } );
+
+        groundMesh = new THREE.Mesh( planeGeometry, groundMaterial );
         groundMesh.position.y = - 250;
         groundMesh.rotation.x = - Math.PI / 2;
         groundMesh.receiveShadow = true;
@@ -155,6 +160,18 @@
 
     function RenderLoop(){
 
+/*
+        scene.traverse( function (e){
+            if (e instanceof THREE.Mesh && e != groundMesh)
+            {
+                // console.log( "Element Type : " + e.type + "e.id " + e.id );
+                e.rotation.x += controls.rotationSpeed;
+                e.rotation.y += controls.rotationSpeed;
+                e.rotation.z += controls.rotationSpeed;
+            }
+        });
+        */
+
         requestAnimationFrame( RenderLoop );
 
         camera.lookAt( scene.position );
@@ -162,12 +179,47 @@
     }
 
 
+    function addCube(){
+
+        // var cubeSize = Math.ceil((Math.random() * 3));
+        //var cubeSize = Math.ceil((Math.random() * 300));
+        var cubeSize = 100;
+        var cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff});
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        cube.name = "cube-" + scene.children.length;
+
+        // position the cube randomly in the scene
+
+        // cube.position.x = -30 + Math.round((Math.random() * planeGeometry.parameters.width));
+        cube.position.x = -30 + Math.round((Math.random() * 2000));
+        cube.position.y = Math.round((Math.random() * 5));
+        //cube.position.z = -20 + Math.round((Math.random() * planeGeometry.parameters.height));
+        cube.position.z = -20 + Math.round((Math.random() * 2000));
+
+
+        /*
+        cube.position.x = 0;
+        cube.position.y = 0;
+        cube.position.z = 0;
+        */
+
+        // add the cube to the scene
+        scene.add(cube);
+
+        numberOfObjects = scene.children.length;
+
+        // console.log("Called addCube !!  count: " + numberOfObjects);
+        console.log("cubeSize : " + cubeSize + ", x: " + cube.position.x + ", y: " + cube.position.y + ", z: " + cube.position.z  );
+    }
+
+
     function Init(){
 
         InitScene();
-
         InitMesh();
-
         InitRenderer();
     }
 
