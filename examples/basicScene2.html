@@ -84,6 +84,7 @@
         // scene 생성
         scene = new THREE.Scene();
         scene.background = new THREE.Color( 0xcce0ff );
+        scene.fog = new THREE.Fog( 0xcce0ff, 8000, 10000 );
 
         // camera 생성
         // camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -156,7 +157,6 @@
         renderer.gammaOutput = true;
 
         renderer.shadowMap.enabled = true;
-
 
         // orbit Controls
         var controls = new THREE.OrbitControls( camera, renderer.domElement );
