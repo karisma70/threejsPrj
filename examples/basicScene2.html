@@ -196,14 +196,6 @@
 
         // position the cube randomly in the scene
 
-
-        /*
-         cube.position.x = 200;
-         cube.position.y = 100;
-         cube.position.z = 50;
-         */
-
-
         cube.position.x = Math.round((Math.random() * 300));
         cube.position.y = Math.round((Math.random() * 300));
         cube.position.z = Math.round((Math.random() * 300));
@@ -221,8 +213,7 @@
 
         numberOfObjects = scene.children.length;
 
-        // console.log("Called addCube !!  count: " + numberOfObjects);
-        console.log("cubeSize : " + cubeSize + ", x: " + cube.position.x + ", y: " + cube.position.y + ", z: " + cube.position.z  );
+        console.log("count: " + numberOfObjects + "cubeSize : " + cubeSize + ", x: " + cube.position.x + ", y: " + cube.position.y + ", z: " + cube.position.z  );
     }
 
 
@@ -315,10 +306,6 @@
 
         window.renderWidth = window.innerWidth - adjustWidth;
         window.renderHeight = window.innerHeight - adjustHeight;
-
-        /////////
-        // window.renderWidth = window.innerWidth;
-        // window.renderHeight = window.innerHeight;
 
         Init();
         RenderLoop();
