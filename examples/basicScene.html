@@ -7,6 +7,7 @@
     <script src="../build/three.js"></script>
     <script src="js/libs/stats.min.js"></script>
     <script src="js/libs/dat.gui.min.js"></script>
+    <script src="js/controls/OrbitControls.js"></script>
 
     <style type ="text/css">
         *{   margin: 0;padding: 0;
@@ -54,6 +55,8 @@
     var scene;
     var camera;
     var renderer;
+    var plane;
+    var planeGeometry;
 
     var adjustWidth = 204;
     var adjustHeight = 4;
@@ -73,16 +76,14 @@
         return stats;
     }
 
-    function init(){
-
-        var stats = initStats();
+    function initScene() {
 
         // create a scene, that will hold all our elements such as objects, cameras and lights.
         scene = new THREE.Scene();
-        scene.background = new THREE.Color( 0xcce0ff );
+        scene.background = new THREE.Color(0xcce0ff);
 
         // create a camera, which defines where we're looking at.
-        camera = new THREE.PerspectiveCamera(45, window.window.renderWidth / window.window.renderHeight, 0.1, 10000 );
+        camera = new THREE.PerspectiveCamera(45, window.window.renderWidth / window.window.renderHeight, 1, 10000);
         // position and point the camera to the center of the scene
         camera.position.x = -30;
         camera.position.y = 40;
@@ -90,26 +91,37 @@
         camera.lookAt(scene.position);
 
         scene.add(camera);
+    }
 
+    function initRenderer(){
         // create a render and set the size
-        //renderer = new THREE.WebGLRenderer();
-        renderer = new THREE.WebGLRenderer(  { antialias : true } );
-        renderer.setPixelRatio( window.devicePixelRatio );
-        // renderer.setClearColor(new THREE.Color(0xEEEEEE), 1.0);
-        renderer.setSize(window.renderWidth, window.renderHeight );
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.renderWidth, window.renderHeight);
+        renderer.shadowMap.renderSingleSided = false;
+        document.getElementById("renderView").appendChild(renderer.domElement);
 
-        // renderer.gammaInput = true;
-        // renderer.gammaOutput = true;
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
 
         renderer.shadowMapEnabled = true;
 
+        var controls = new THREE.OrbitControls( camera, renderer.domElement );
+        controls.maxPolarAngle = Math.PI * 0.5;
+        controls.minDistance = 30;
+        controls.maxDistance = 10000;
+
+    }
+
+    function initPlane() {
+
         // create the ground plane
         // var planeGeometry = new THREE.PlaneGeometry(60, 40, 1, 1);
-        var planeGeometry = new THREE.PlaneBufferGeometry( 60, 40);
+        planeGeometry = new THREE.PlaneBufferGeometry(60, 40);
 
         var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
         // var planeMaterial = new THREE.MeshPhongMaterial( { color: 0x000066 } );
-        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.receiveShadow = true;
 
         // rotate and position the plane
@@ -120,7 +132,10 @@
 
         // add the plane to the scene
         scene.add(plane);
+    }
 
+
+    function initLight() {
 
         // add subtle ambient lighting
         var ambientLight = new THREE.AmbientLight(0x0c0c0c);
@@ -133,9 +148,19 @@
         // spotLight.position.multiplyScalar( 1.0 );       // 새로 추가된 코드 부분이다
         spotLight.castShadow = true;
         scene.add(spotLight);
+    }
+
+    function init(){
+
+        var stats = initStats();
+
+        initScene();
+        initRenderer();
+        initPlane();
+        initLight();
 
         // add the output of the renderer to the html element
-       document.getElementById("renderView").appendChild(renderer.domElement);
+        // document.getElementById("renderView").appendChild(renderer.domElement);
 
         // call the render function
         var step = 0;
@@ -270,14 +295,14 @@
 
             if( bIsFullScr == 'false' ) {
                 adjustScrDiv.normalScrMap();
-                toggleBtn.src = img1;
+             //    toggleBtn.src = img1;
             }
             else{
                 adjustScrDiv.fullScrMap();
-                toggleBtn.src = img2;
+             //   toggleBtn.src = img2;
             }
 
-            map.updateSize();
+            // map.updateSize();
         }
 
         function toggleScrMap(){
