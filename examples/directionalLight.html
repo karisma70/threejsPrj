@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="../build/three.js"></script>
+    <script src="js/libs/stats.min.js"></script>
+    <script src="js/libs/dat.gui.min.js"></script>
+    <script src="js/controls/OrbitControls.js"></script>
+
+    <style type ="text/css">
+        *{   margin: 0;padding: 0;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-size: 12px;
+        }
+        .wrapperDiv{
+            /* overflow:hidden; */
+            /* border:1px solid red; */
+            height: 100%;
+        }
+        #sidebar{
+            width: 200px;
+            float:left;
+        }
+        .mapview{
+            float: left;
+            background-color: #fcf8e3;
+            border:1px solid grey;
+        }
+
+    </style>
+</head>
+<body>
+<div class="wrapperDiv">
+    <div id="sidebar" style="position:absolute;">
+        <p>고정폭 200px</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Porro inventore esse debitis voluptas labore ut quae veritatis reprehenderit ipsum.</p>
+    </div>
+
+    <div id="renderView" class="mapview" style="position:absolute;">
+    </div>
+
+</div>
+
+<script>
+
+    var scene;
+    var camera;
+    var renderer;
+    var plane;
+    var planeGeometry;
+
+    var adjustWidth = 204;
+    var adjustHeight = 4;
+
+    function initStats(){
+        var stats = new Stats();
+
+        stats.setMode(0); // 0: fps, 1: ms
+
+        // Align top-left
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+
+        document.getElementById("renderView").appendChild(stats.domElement);
+
+        return stats;
+    }
+
+    function initScene() {
+
+        // create a scene, that will hold all our elements such as objects, cameras and lights.
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xcce0ff);
+
+        // create a camera, which defines where we're looking at.
+        camera = new THREE.PerspectiveCamera(45, window.window.renderWidth / window.window.renderHeight, 1, 10000);
+        // position and point the camera to the center of the scene
+        camera.position.x = -300;
+        camera.position.y = 400;
+        camera.position.z = 300;
+        camera.lookAt(scene.position);
+
+        scene.add(camera);
+    }
+
+    function initRenderer(){
+        // create a render and set the size
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.renderWidth, window.renderHeight);
+        renderer.shadowMap.renderSingleSided = true;
+        document.getElementById("renderView").appendChild(renderer.domElement);
+
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
+
+        renderer.shadowMapEnabled = true;
+
+        var controls = new THREE.OrbitControls( camera, renderer.domElement );
+        controls.maxPolarAngle = Math.PI * 0.5;
+        controls.minDistance = 30;
+        controls.maxDistance = 10000;
+
+    }
+
+
+    function initPlane() {
+        var loader = new THREE.TextureLoader();
+        var groundTexture = loader.load( 'textures/terrain/grasslight-big.jpg' );
+        groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+        // groundTexture.repeat.set( 25, 25 );
+        groundTexture.repeat.set( 50, 50 );
+        groundTexture.anisotropy = 16;
+
+        var gridHelper = new THREE.GridHelper( 1200, 20 );      // 1200 크기에 20개의 셀로 분할
+        scene.add( gridHelper );
+
+        // var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, map: groundTexture } );
+        var groundMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, specular: 0x111111, map: groundTexture } );
+        planeGeometry = new THREE.PlaneBufferGeometry( 1200, 1200 );
+        plane = new THREE.Mesh( planeGeometry, groundMaterial );
+        plane.receiveShadow = true;
+
+        // var groundMesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 20000, 20000 ), groundMaterial );
+
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = 0;
+        plane.position.z = 0;
+
+        scene.add( plane );
+
+    }
+
+
+    function initLight() {
+
+        var posX = -240;
+        var posY = 360 * 2;
+        var posZ = -400;
+
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+        scene.add(ambientLight);
+
+
+        var dirLight = new THREE.DirectionalLight( 0xdfebff, 1.75 );    // 파라미터 확인할 것
+        // var dirLight = new THREE.DirectionalLight( 0xdfebff, 2 );    // 파라미터 확인할 것
+        // dirLight.position.set( 50, 200, 100 );
+        dirLight.position.set( posX, posY, posZ );
+        dirLight.position.multiplyScalar( 1.3 );
+        dirLight.castShadow = true;
+
+        //dirLight.shadow.mapSize.width = 1024;
+        //dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.mapSize.width = 4096;
+        dirLight.shadow.mapSize.height = 4096;
+
+        var dist = 1000;
+        dirLight.shadow.camera.left = - dist;
+        dirLight.shadow.camera.right = dist;
+        dirLight.shadow.camera.top = dist;
+        dirLight.shadow.camera.bottom = -dist;
+
+        dirLight.shadow.camera.near = 2;
+        dirLight.shadow.camera.far = 2000;
+
+        scene.add( dirLight );
+
+
+        var sphereGeometry = new THREE.SphereGeometry( 5, 5, 5 );
+        var sphereMaterial = new THREE.MeshLambertMaterial({color: 0xff0000 });
+        var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial);
+        sphere.position.set( posX, posY, posZ );
+        scene.add( sphere );
+
+    }
+
+    function init(){
+
+        var stats = initStats();
+
+        initScene();
+        initPlane();
+        initLight();
+        initRenderer();
+
+
+        // add the output of the renderer to the html element
+        // document.getElementById("renderView").appendChild(renderer.domElement);
+
+        // call the render function
+        var step = 0;
+
+
+        var controls = new function (){
+            this.rotationSpeed = 0.02;
+            this.numberOfObjects = scene.children.length;
+
+            this.removeCube = function ()
+            {
+                var allChildren = scene.children;
+                var lastObject = allChildren[allChildren.length - 1];
+                if (lastObject instanceof THREE.Mesh)
+                {
+                    scene.remove(lastObject);
+                    this.numberOfObjects = scene.children.length;
+                }
+
+                console.log( "Called removeCube !!  count: " + allChildren.length );
+            };
+
+            this.addCube = function ()
+            {
+                var cubeSize = Math.ceil((Math.random() * 30));
+                var cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+                var cubeMaterial = new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff});
+                var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+                cube.castShadow = true;
+                cube.receiveShadow = true;
+                cube.name = "cube-" + scene.children.length;
+
+                cube.position.x = -(planeGeometry.parameters.width*0.5) + Math.round((Math.random() * planeGeometry.parameters.width));
+                cube.position.y = Math.round((Math.random() * 100));
+                cube.position.z = -(planeGeometry.parameters.height*0.5) + Math.round((Math.random() * planeGeometry.parameters.height));
+
+                // add the cube to the scene
+                scene.add(cube);
+                this.numberOfObjects = scene.children.length;
+
+                console.log("count: " + this.numberOfObjects + "cubeSize : " + cubeSize + ", x: " + cube.position.x + ", y: " + cube.position.y + ", z: " + cube.position.z  );
+
+            };
+
+            this.outputObjects = function ()
+            {
+                console.log(scene.children);
+            }
+        };      // end of controls = new
+
+
+        var gui = new dat.GUI();
+        gui.add(controls, 'rotationSpeed', 0, 0.5);
+        gui.add(controls, 'addCube');
+        gui.add(controls, 'removeCube');
+        gui.add(controls, 'outputObjects');
+        gui.add(controls, 'numberOfObjects').listen();
+
+        render();
+
+        function render()
+        {
+            stats.update();
+
+            // rotate the cubes around its axes
+            scene.traverse( function (e)
+            {
+                if (e instanceof THREE.Mesh && e != plane)
+                {
+                    // console.log( "Element Type : " + e.type + "e.id " + e.id );
+                    e.rotation.x += controls.rotationSpeed;
+                    e.rotation.y += controls.rotationSpeed;
+                    e.rotation.z += controls.rotationSpeed;
+                }
+            });
+
+            // render using requestAnimationFrame
+            requestAnimationFrame(render);
+            renderer.render(scene, camera);
+        }
+
+        for( var idx = 0; idx < 200; idx ++ ){
+            controls.addCube();
+        }
+    }
+
+
+
+    var adjustScrDiv = (function(){
+
+        var bIsFullScr = 'false';
+
+        function fullScrMap(){
+            var sidebar = document.getElementById('sidebar');
+            var mapview = document.getElementById('renderView');
+
+            var toggleBtn = document.getElementById("footerToggle");
+            toggleBtn.style.left = ( window.innerWidth * 0.5 ) + "px";
+            toggleBtn.style.top = (window.innerHeight - 13)+ "px";
+
+
+            sidebar.style.bottom = 0 + 'px';
+
+            mapview.style.left = 200+'px';
+            mapview.style.right = 0 + 'px';
+            mapview.style.bottom = 0 + 'px';
+        }
+
+        function normalScrMap(){
+            var sidebar = document.getElementById('sidebar');
+            var mapview = document.getElementById('renderView');
+            var footer = document.getElementById('footer');
+
+            var mapHeight = window.innerHeight * 0.65;
+
+            sidebar.style.top = 0;
+            sidebar.style.bottom = ( window.innerHeight- ( window.innerHeight * 0.65 )) + 'px';
+            mapview.style.left = 200+'px';
+            mapview.style.right = 0 + 'px';
+            mapview.style.top = 0 + 'px';
+            mapview.style.bottom = 0 + 'px';
+        }
+
+        function showScrMap( ){
+
+            var img1 = "hideBible.png";
+            var img2 = "showBible.png";
+
+            var toggleBtn = document.getElementById("footerToggle");
+
+            if( bIsFullScr == 'false' ) {
+                adjustScrDiv.normalScrMap();
+                //    toggleBtn.src = img1;
+            }
+            else{
+                adjustScrDiv.fullScrMap();
+                //   toggleBtn.src = img2;
+            }
+
+            // map.updateSize();
+        }
+
+        function toggleScrMap(){
+
+            if( bIsFullScr == 'false'){
+                bIsFullScr = 'true';
+            }
+            else{
+                bIsFullScr = 'false';
+            }
+            showScrMap();
+        }
+
+        return {
+            fullScrMap : fullScrMap,
+            normalScrMap : normalScrMap,
+            showScrMap : showScrMap,
+            toggleScrMap : toggleScrMap
+        };
+
+    }());
+
+    function toggleScrMap(){
+        adjustScrDiv.toggleScrMap();
+    }
+
+    window.onload = function(){
+
+        window.renderWidth = window.innerWidth - adjustWidth;
+        window.renderHeight = window.innerHeight - adjustHeight;
+
+        init();
+        adjustScrDiv.normalScrMap();
+    };
+
+    window.onresize = function(){
+
+        window.renderWidth = window.innerWidth - adjustWidth;
+        window.renderHeight = window.innerHeight - adjustHeight;
+
+        if( camera ) {
+            // camera.aspect = window.innerWidth / window.innerHeight;
+            camera.aspect = window.renderWidth / window.renderHeight;
+            camera.updateProjectionMatrix();
+        }
+
+        if( renderer ) {
+            // renderer.setSize(window.innerWidth-adjustWidth, window.innerHeight-adjustHeight);
+            renderer.setSize( window.renderWidth, window.renderHeight );
+        }
+
+        adjustScrDiv.showScrMap();
+    }
+
+
+</script>
+
+</body>
+</html>
