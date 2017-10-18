@@ -116,10 +116,11 @@
 
     function initPlane() {
         var loader = new THREE.TextureLoader();
-        var groundTexture = loader.load( 'textures/terrain/grasslight-big.jpg' );
+        //var groundTexture = loader.load( 'textures/terrain/grasslight-big.jpg' );
+        var groundTexture = loader.load( 'textures/terrain/metal-texture2.jpg' );
         groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
         // groundTexture.repeat.set( 25, 25 );
-        groundTexture.repeat.set( 50, 50 );
+        groundTexture.repeat.set( 5, 5 );
         groundTexture.anisotropy = 16;
 
         var gridHelper = new THREE.GridHelper( 1200, 20 );      // 1200 크기에 20개의 셀로 분할
@@ -274,6 +275,11 @@
             requestAnimationFrame(render);
             renderer.render(scene, camera);
         }
+
+        for( var idx = 0; idx < 200; idx ++ ){
+            controls.addCube();
+        }
+
     }
 
 
