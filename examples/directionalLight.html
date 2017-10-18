@@ -118,8 +118,7 @@
         var loader = new THREE.TextureLoader();
         var groundTexture = loader.load( 'textures/terrain/grasslight-big.jpg' );
         groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
-        // groundTexture.repeat.set( 25, 25 );
-        groundTexture.repeat.set( 50, 50 );
+        groundTexture.repeat.set( 5, 5 );
         groundTexture.anisotropy = 16;
 
         var gridHelper = new THREE.GridHelper( 1200, 20 );      // 1200 크기에 20개의 셀로 분할
@@ -147,7 +146,7 @@
 
         var posX = -240;
         var posY = 360 * 2;
-        var posZ = -400;
+        var posZ = -200;
 
         // add subtle ambient lighting
         var ambientLight = new THREE.AmbientLight(0x0c0c0c);
