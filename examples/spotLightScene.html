@@ -122,6 +122,9 @@
         groundTexture.repeat.set( 50, 50 );
         groundTexture.anisotropy = 16;
 
+        var gridHelper = new THREE.GridHelper( 1200, 20 );      // 1200 크기에 20개의 셀로 분할
+        scene.add( gridHelper );
+
         var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, map: groundTexture } );
         planeGeometry = new THREE.PlaneBufferGeometry( 1200, 1200 );
         plane = new THREE.Mesh( planeGeometry, groundMaterial );
